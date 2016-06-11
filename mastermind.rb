@@ -1,4 +1,5 @@
 $game_over = false
+$num_turns = 12
 $colors = ["red", "orange", "yellow", "green", "blue", "purple"]
 
 class Game
@@ -23,18 +24,14 @@ class Game
     resp['white_pegs'] = 0
 
     guess.each_with_index do |color, index|
-      puts "color: #{color}, answer[index]: #{answer[index]}"
       if answer[index] == color
         @black_pegs += 1
-        puts "exact match"
       elsif answer[index..-1].include? color
-        puts "included color"
         @white_pegs += 1 
       end
     end
     resp['black_pegs'] = @black_pegs
     resp['white_pegs'] = @white_pegs
-    puts "guess: #{guess}"
     return resp
   end
 end
@@ -42,16 +39,17 @@ end
 class Player
   def self.make_guess(size)
     guess = []
-    puts "enter a guess one color at a time followed by the enter key"
-    puts "the available color choices: 'red', 'orange', 'yellow', 'green', 'blue', 'purple'"
     size.times do
-      puts "Enter a color ('red', 'orange', 'yellow', 'green', 'blue', 'purple')"
+      puts "Enter a color ('red', 'orange', 'yellow', 'green', 'blue', 'purple'), no duplicates"
       color = gets.chomp
+      if guess.include? color
+        puts "cannot duplicate colors, enter guess from the beginning"
+        return self.make_guess(size)
+      end
       if $colors.include?(color)
-        puts "#{color} is a valid color!"
         guess << color
       else
-        puts "#{color} isn't invalid color"
+        puts "#{color} isn't invalid color, enter guess from the beginning"
         return self.make_guess(size) if not $colors.include?(color)
       end
     end
@@ -61,8 +59,8 @@ class Player
 end
 
 mygame = Game.new
-
-while not $game_over
+current_turn = 0
+while current_turn < $num_turns and not $game_over
   guess = Player.make_guess(mygame.size)
   print "guess: #{guess}\n"
   response = mygame.evaluate_guess(guess)
@@ -72,4 +70,5 @@ while not $game_over
     puts 'you win!'
     game_over = true
   end
+  current_turn += 1
 end
